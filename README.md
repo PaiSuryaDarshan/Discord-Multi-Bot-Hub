@@ -1,5 +1,9 @@
 # Discord Multi-Bot Hub
 
+<p align="center">
+  <img src="assets/banner_welcomer.png" alt="Discord Identity Card Bot Banner" width="100%">
+</p>
+
 A collection of independent Discord bots hosted within a single Render service.
 
 ## Why this repository exists
