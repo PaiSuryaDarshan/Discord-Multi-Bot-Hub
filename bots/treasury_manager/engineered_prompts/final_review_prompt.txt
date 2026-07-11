@@ -1,0 +1,24 @@
+Treasury Manager — Final Review Prompt
+
+This is a dummy demonstration only. Do not connect to real financial systems.
+
+Review every file inside `bots/treasury_manager/` as one integrated Discord bot module.
+
+Check that:
+- All relative imports are correct.
+- There are no circular imports.
+- `create_bot()` can be imported using:
+  `from bots.treasury_manager import create_bot`
+- The slash command opens the modal correctly.
+- Modal submission posts an embed with working review buttons.
+- Only Treasury Approvers or administrators can review requests.
+- Approval generates a dummy cryptic key.
+- Await and Reject do not generate a key.
+- Buttons cannot process the same request more than once.
+- No file calls `client.run()`.
+- No file starts the Flask server.
+- No file reads the bot token.
+- No database, wallet API, exchange API, blockchain API, or persistence is used.
+- Code is compatible with `discord.py 2.x`.
+- Add comments only where they improve clarity.
+- Return any corrected files in full.

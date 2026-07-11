@@ -1,0 +1,46 @@
+Treasury Manager — views.py Implementation Prompt
+
+This is a dummy demonstration only. Do not connect to real financial systems.
+
+Create `bots/treasury_manager/views.py` using `discord.py 2.x`.
+
+Purpose:
+Implement the interactive moderator review buttons for a dummy transaction request.
+
+Create a class called `TransactionReviewView` extending `discord.ui.View`.
+
+Buttons:
+- Approve
+  Style: green
+  Emoji: ✅
+- Await
+  Style: secondary or grey
+  Emoji: ⏳
+- Reject
+  Style: red
+  Emoji: ❌
+
+Requirements:
+- Only users with the `Treasury Approver` role or administrator permissions may use the buttons.
+- Unauthorised users must receive an ephemeral denial message.
+- Store the requester ID and original request details inside the view.
+- Prevent a completed request from being processed twice.
+- On Approve:
+  - Generate a random cryptic transaction authorisation key using `generate_transaction_key()` from `utils.py`.
+  - Replace the pending embed with a compact approved embed from `embeds.py`.
+  - Include requester, approver, amount, market, action, and transaction key.
+  - Disable all buttons.
+- On Await:
+  - Replace or update the embed with an awaiting-information embed.
+  - Record who placed it on hold.
+  - Disable the Await button or all buttons, depending on the cleanest implementation.
+  - Do not generate a transaction key.
+- On Reject:
+  - Replace the embed with a compact rejected embed.
+  - Include requester and rejecting moderator.
+  - Disable all buttons.
+  - Do not generate a transaction key.
+- Acknowledge every interaction correctly to avoid Discord’s “interaction failed” message.
+- Do not execute real transactions.
+- Do not use SQL or any persistence layer.
+- Use package-relative imports, type hints, docstrings, and robust error handling.

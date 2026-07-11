@@ -65,6 +65,7 @@ This makes every bot easy to understand, develop, document and eventually extrac
 | Bot | Description | Status |
 |------|-------------|--------|
 | Identity Card Welcomer | Generates permanent welcome cards from Discord roles. | ✅ |
+| Treasury Manager | Community-governed transaction request and approval workflow for shared treasury management. | ✅ |
 | Kaggle Events | Announces new Kaggle competitions and events. | 🚧 Planned |
 | LeetCode Challenge | Posts daily coding challenges. | 🚧 Planned |
 | Activity Bot | Community engagement and scheduled events. | 🚧 Planned |

@@ -1,0 +1,34 @@
+Treasury Manager — utils.py Implementation Prompt
+
+This is a dummy demonstration only. Do not connect to real financial systems.
+
+Create `bots/treasury_manager/utils.py`.
+
+Purpose:
+Provide small shared utility functions for the dummy Treasury Manager bot.
+
+Implement:
+
+`generate_transaction_key() -> str`
+
+Requirements:
+- Use Python’s `secrets` module, not `random`.
+- Return a cryptic but readable key in this format:
+
+  `TX-7AF2-C41D-98BE`
+
+- Generate three uppercase hexadecimal groups.
+- Each group should contain four characters.
+- The function must not create, sign, broadcast, or represent a real blockchain transaction.
+- Include a clear docstring explaining that the value is only a demonstration authorisation reference.
+
+Also implement:
+
+`truncate_text(value: str, limit: int) -> str`
+
+Requirements:
+- Return the original text when it fits.
+- Otherwise truncate it and append `...`.
+- Handle very small limits safely.
+- Include type hints and docstrings.
+- Do not include Discord-specific business logic in this utility file.

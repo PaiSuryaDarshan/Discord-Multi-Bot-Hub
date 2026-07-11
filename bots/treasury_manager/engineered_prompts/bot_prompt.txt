@@ -1,0 +1,39 @@
+Treasury Manager — bot.py Implementation Prompt
+
+This is a dummy demonstration only. Do not connect to real financial systems.
+
+Create `bots/treasury_manager/bot.py` for a modular Discord multi-bot project using `discord.py 2.x`.
+
+Purpose:
+Build a dummy Treasury Manager bot that allows authorised community members to submit transaction requests for moderator review. It must not connect to a wallet, exchange, blockchain, database, or payment service.
+
+Requirements:
+- Use Discord slash commands with `app_commands`.
+- Expose a function called `create_bot()` so the root `main.py` can start this client with `client.start(token)`.
+- Do not call `client.run()`.
+- Do not read environment variables or start the Flask keep-alive server here.
+- Use a configurable authorised requester role name:
+  `TREASURY_MEMBER_ROLE = "Treasury Member"`
+- Use a configurable approver role:
+  `TREASURY_APPROVER_ROLE = "Treasury Approver"`
+- Register a `/request_transaction` slash command.
+- Check that the user has the Treasury Member role or administrator permissions.
+- If unauthorised, respond ephemerally with a clear error.
+- If authorised, open the transaction request modal from `modals.py`.
+- Sync application commands in `setup_hook()`.
+- Log successful startup clearly using `[Treasury Manager]`.
+- Import the modal using package-relative imports.
+- Include type hints, docstrings, sensible error handling, and clean formatting.
+- Avoid global mutable state unless required.
+- Ensure compatibility with the repository structure:
+
+bots/
+└── treasury_manager/
+    ├── __init__.py
+    ├── bot.py
+    ├── modals.py
+    ├── views.py
+    ├── embeds.py
+    └── utils.py
+
+The bot is a demonstration only. Do not implement real financial execution.

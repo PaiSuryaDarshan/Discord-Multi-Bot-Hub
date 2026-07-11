@@ -1,0 +1,59 @@
+Treasury Manager — embeds.py Implementation Prompt
+
+This is a dummy demonstration only. Do not connect to real financial systems.
+
+Create `bots/treasury_manager/embeds.py` using `discord.py 2.x`.
+
+Purpose:
+Provide reusable functions that build all embeds used by the dummy Treasury Manager workflow.
+
+Implement these functions:
+
+1. `build_pending_embed(...)`
+   Include:
+   - Requester mention
+   - Amount and currency
+   - Market or trading pair
+   - Proposed action
+   - Confidence and holding period
+   - Trade thesis and risk limit
+   - Status: Awaiting Review
+   Use yellow or gold.
+
+2. `build_approved_embed(...)`
+   Create a compact final embed containing:
+   - `✅ Transaction Approved`
+   - Requester
+   - Approver
+   - Amount
+   - Market
+   - Action
+   - Random authorisation key
+   Use green.
+
+3. `build_awaiting_embed(...)`
+   Include:
+   - `⏳ Awaiting Further Information`
+   - Requester
+   - Reviewer
+   - A concise summary of the request
+   Use orange.
+
+4. `build_rejected_embed(...)`
+   Include:
+   - `❌ Transaction Rejected`
+   - Requester
+   - Reviewer
+   - A concise summary of the request
+   Use red.
+
+Requirements:
+- Keep embed fields within Discord limits.
+- Truncate long user text safely.
+- Use timestamps.
+- Include a footer stating:
+  `Demonstration workflow only — no funds are transferred.`
+- Do not put approval logic in this file.
+- Do not generate transaction keys in this file.
+- Keep this file limited to embed construction and formatting.
+- Use type hints and docstrings.

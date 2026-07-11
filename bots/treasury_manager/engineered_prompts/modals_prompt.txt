@@ -1,0 +1,41 @@
+Treasury Manager — modals.py Implementation Prompt
+
+This is a dummy demonstration only. Do not connect to real financial systems.
+
+Create `bots/treasury_manager/modals.py` using `discord.py 2.x`.
+
+Purpose:
+Define the Discord modal used to collect a dummy transaction request from an authorised user.
+
+Create a class called `TransactionRequestModal` extending `discord.ui.Modal`.
+
+Collect these fields:
+1. Amount and currency
+   Example: `250 USDC`
+2. Market or trading pair
+   Example: `BTC/USDT`
+3. Proposed action
+   Example: `Long`, `Short`, `Buy`, or `Sell`
+4. Confidence and holding period
+   Example: `8/10, 2–5 days`
+5. Trade thesis and risk limit
+   A longer paragraph explaining the reasoning, invalidation point, or stop condition
+
+Requirements:
+- Validate that required fields are not empty.
+- Limit text lengths to sensible Discord-compatible values.
+- On submission, create a pending request embed using a function from `embeds.py`.
+- Attach a `TransactionReviewView` imported from `views.py`.
+- Include the requester’s user ID inside the view so the decision can later identify the requester.
+- Post the request into a configurable review channel named:
+  `treasury-requests`
+- Find the review channel in the current guild.
+- Verify the bot can send messages and embeds there.
+- If the channel cannot be found, respond ephemerally with a helpful error.
+- After successful submission, respond ephemerally:
+  `Your transaction request has been submitted for review.`
+- Do not create a database or write files.
+- Do not ask the user questions through multiple Discord messages.
+- Keep all form interaction inside the modal.
+- Use clean type hints, docstrings, and exception handling.
+- Use package-relative imports.
