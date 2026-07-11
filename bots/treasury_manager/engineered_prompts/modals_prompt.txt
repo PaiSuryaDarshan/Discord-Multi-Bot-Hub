@@ -1,11 +1,11 @@
 Treasury Manager — modals.py Implementation Prompt
 
-This is a dummy demonstration only. Do not connect to real financial systems.
+Do not connect this workflow to financial systems without a separate, audited integration.
 
 Create `bots/treasury_manager/modals.py` using `discord.py 2.x`.
 
 Purpose:
-Define the Discord modal used to collect a dummy transaction request from an authorised user.
+Define the Discord modal used to collect a transaction request from an authorised user.
 
 Create a class called `TransactionRequestModal` extending `discord.ui.Modal`.
 

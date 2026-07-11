@@ -1,16 +1,24 @@
-"""Small shared utilities for the dummy Treasury Manager bot."""
+"""Small shared utilities for the Treasury Manager bot."""
 
 import secrets
 
 
-def generate_transaction_key() -> str:
-    """Return a demonstration authorisation reference, not a real transaction.
+TRANSACTION_KEY_CANDIDATE_COUNT = 26
 
-    The generated value does not create, sign, broadcast, or represent a
-    blockchain transaction.
-    """
+
+def _generate_key_candidate() -> str:
+    """Generate one cryptographically random transaction key candidate."""
     groups = (secrets.token_hex(2).upper() for _ in range(3))
     return f"TX-{'-'.join(groups)}"
+
+
+def generate_transaction_key() -> str:
+    """Generate fresh candidates and securely select an authorisation key."""
+    candidates = tuple(
+        _generate_key_candidate()
+        for _ in range(TRANSACTION_KEY_CANDIDATE_COUNT)
+    )
+    return secrets.choice(candidates)
 
 
 def truncate_text(value: str, limit: int) -> str:

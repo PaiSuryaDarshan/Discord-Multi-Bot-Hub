@@ -1,11 +1,11 @@
 Treasury Manager — utils.py Implementation Prompt
 
-This is a dummy demonstration only. Do not connect to real financial systems.
+Do not connect this workflow to financial systems without a separate, audited integration.
 
 Create `bots/treasury_manager/utils.py`.
 
 Purpose:
-Provide small shared utility functions for the dummy Treasury Manager bot.
+Provide small shared utility functions for the Treasury Manager bot.
 
 Implement:
 
@@ -20,7 +20,7 @@ Requirements:
 - Generate three uppercase hexadecimal groups.
 - Each group should contain four characters.
 - The function must not create, sign, broadcast, or represent a real blockchain transaction.
-- Include a clear docstring explaining that the value is only a demonstration authorisation reference.
+- Include a clear docstring explaining that the value is an authorisation reference.
 
 Also implement:
 

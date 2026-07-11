@@ -1,11 +1,11 @@
 Treasury Manager — embeds.py Implementation Prompt
 
-This is a dummy demonstration only. Do not connect to real financial systems.
+Do not connect this workflow to financial systems without a separate, audited integration.
 
 Create `bots/treasury_manager/embeds.py` using `discord.py 2.x`.
 
 Purpose:
-Provide reusable functions that build all embeds used by the dummy Treasury Manager workflow.
+Provide reusable functions that build all embeds used by the Treasury Manager workflow.
 
 Implement these functions:
 
@@ -52,7 +52,7 @@ Requirements:
 - Truncate long user text safely.
 - Use timestamps.
 - Include a footer stating:
-  `Demonstration workflow only — no funds are transferred.`
+  `Treasury review workflow — no funds are transferred automatically.`
 - Do not put approval logic in this file.
 - Do not generate transaction keys in this file.
 - Keep this file limited to embed construction and formatting.

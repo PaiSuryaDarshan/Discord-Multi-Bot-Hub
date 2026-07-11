@@ -1,6 +1,6 @@
 Treasury Manager — Final Review Prompt
 
-This is a dummy demonstration only. Do not connect to real financial systems.
+Do not connect this workflow to financial systems without a separate, audited integration.
 
 Review every file inside `bots/treasury_manager/` as one integrated Discord bot module.
 
@@ -12,7 +12,7 @@ Check that:
 - The slash command opens the modal correctly.
 - Modal submission posts an embed with working review buttons.
 - Only Treasury Approvers or administrators can review requests.
-- Approval generates a dummy cryptic key.
+- Approval generates a cryptic authorisation key.
 - Await and Reject do not generate a key.
 - Buttons cannot process the same request more than once.
 - No file calls `client.run()`.

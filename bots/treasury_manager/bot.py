@@ -1,4 +1,4 @@
-"""Discord client for the demonstration Treasury Manager workflow."""
+"""Discord client for the Treasury Manager workflow."""
 
 import logging
 
@@ -8,7 +8,7 @@ from discord import app_commands
 from .modals import TransactionRequestModal
 
 
-TREASURY_MEMBER_ROLE = "Treasury Member"
+TREASURY_MEMBER_ROLE_ID = 1525600529189834962
 TREASURY_APPROVER_ROLE = "Treasury Approver"
 
 logger = logging.getLogger(__name__)
@@ -18,12 +18,12 @@ def _is_authorised_requester(member: discord.Member) -> bool:
     """Return whether a member may submit a transaction request."""
     return (
         member.guild_permissions.administrator
-        or discord.utils.get(member.roles, name=TREASURY_MEMBER_ROLE) is not None
+        or discord.utils.get(member.roles, id=TREASURY_MEMBER_ROLE_ID) is not None
     )
 
 
 class TreasuryManagerClient(discord.Client):
-    """Discord client that collects dummy requests for moderator review."""
+    """Discord client that collects requests for moderator review."""
 
     def __init__(self) -> None:
         """Initialise the client and its application command tree."""
@@ -36,7 +36,7 @@ class TreasuryManagerClient(discord.Client):
 
         @self.tree.command(
             name="request_transaction",
-            description="Submit a dummy transaction request for moderator review.",
+            description="Submit a transaction request for moderator review.",
         )
         @app_commands.guild_only()
         async def request_transaction(interaction: discord.Interaction) -> None:
@@ -50,7 +50,7 @@ class TreasuryManagerClient(discord.Client):
 
             if not _is_authorised_requester(interaction.user):
                 await interaction.response.send_message(
-                    f"You need the {TREASURY_MEMBER_ROLE!r} role or administrator "
+                    f"You need the <@&{TREASURY_MEMBER_ROLE_ID}> role or administrator "
                     "permissions to submit a transaction request.",
                     ephemeral=True,
                 )

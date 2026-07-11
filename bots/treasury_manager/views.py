@@ -1,4 +1,4 @@
-"""Moderator review controls for dummy Treasury Manager requests."""
+"""Moderator review controls for Treasury Manager requests."""
 
 import asyncio
 import logging
@@ -129,7 +129,7 @@ class TransactionReviewView(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button["TransactionReviewView"],
     ) -> None:
-        """Approve the request and generate a dummy authorisation key."""
+        """Approve the request and generate an authorisation key."""
         del button
 
         def build_embed() -> discord.Embed:

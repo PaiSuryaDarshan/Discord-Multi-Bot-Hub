@@ -1,4 +1,4 @@
-"""Transaction request modal for the demonstration Treasury Manager bot."""
+"""Transaction request modal for the Treasury Manager bot."""
 
 import logging
 
@@ -17,7 +17,7 @@ class TransactionRequestModal(
     discord.ui.Modal,
     title="Request a Transaction Review",
 ):
-    """Collect a dummy transaction proposal for moderator review."""
+    """Collect a transaction proposal for moderator review."""
 
     def __init__(
         self,
@@ -30,7 +30,7 @@ class TransactionRequestModal(
 
     amount_currency = discord.ui.TextInput(
         label="Amount and currency",
-        placeholder="250 USDC",
+        placeholder="0.02 BTC",
         min_length=1,
         max_length=100,
         required=True,

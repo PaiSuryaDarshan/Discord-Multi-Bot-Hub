@@ -1,4 +1,4 @@
-"""Embed builders for the demonstration Treasury Manager workflow."""
+"""Embed builders for the Treasury Manager workflow."""
 
 from collections.abc import Mapping
 
@@ -8,7 +8,7 @@ from .utils import truncate_text
 
 
 EMBED_FIELD_LIMIT = 1_024
-FOOTER_TEXT = "Demonstration workflow only — no funds are transferred."
+FOOTER_TEXT = "Treasury review workflow — no funds are transferred automatically."
 
 
 def _truncate(value: object, limit: int = EMBED_FIELD_LIMIT) -> str:
@@ -80,8 +80,9 @@ def build_approved_embed(
     proposed_action: str,
     transaction_key: str,
 ) -> discord.Embed:
-    """Build a compact embed for an approved dummy request."""
+    """Build a compact embed for an approved request."""
     embed = _base_embed("✅ Transaction Approved", discord.Color.green())
+    embed.description = "This key is only valid for 5 mins"
     fields = (
         ("Requester", _mention(requester_id)),
         ("Approver", _mention(approver)),
@@ -122,7 +123,7 @@ def build_rejected_embed(
     reviewer: discord.abc.User,
     request_details: Mapping[str, str],
 ) -> discord.Embed:
-    """Build a compact embed for a rejected dummy request."""
+    """Build a compact embed for a rejected request."""
     embed = _base_embed("❌ Transaction Rejected", discord.Color.red())
     embed.add_field(name="Requester", value=_mention(requester_id), inline=True)
     embed.add_field(name="Reviewer", value=_mention(reviewer), inline=True)
