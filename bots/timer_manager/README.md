@@ -17,7 +17,7 @@ Unlike simple `/timer 5m` commands, Timer Manager provides persistent, interacti
 - Pause and resume timers
 - Add or remove time after creation
 - Cancel timers
-- Optional timer labels
+- Required timer labels
 - Optional notifications for multiple Discord members and roles
 - Interactive button controls
 - Completion notifications

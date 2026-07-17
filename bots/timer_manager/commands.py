@@ -83,7 +83,7 @@ class TimerCommands(
     )
     @app_commands.describe(
         duration="Timer duration, such as 30s, 5m, 1h 30m, or 2d.",
-        label="Optional name for the timer.",
+        label="Name for the timer.",
         notify="Optional member/role mentions, separated by spaces.",
     )
     @app_commands.guild_only()
@@ -91,7 +91,7 @@ class TimerCommands(
         self,
         interaction: discord.Interaction,
         duration: str,
-        label: str | None = None,
+        label: str,
         notify: str | None = None,
     ) -> None:
         """Create a timer from a Discord slash command."""
@@ -168,7 +168,7 @@ class TimerCommands(
             notify_role_ids=notify_role_ids,
             channel_id=interaction.channel_id,
             duration_seconds=duration_seconds,
-            label=label or "Timer",
+            label=label,
         )
 
         if timer.end_time is None:
