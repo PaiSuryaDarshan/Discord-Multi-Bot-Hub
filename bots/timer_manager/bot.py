@@ -21,7 +21,7 @@ class TimerManagerBot(commands.Bot):
         self.timer_manager = TimerManager()
 
     async def setup_hook(self) -> None:
-        """Register commands and sync the application-command tree."""
+        """Register and globally sync Timer Manager commands."""
 
         await self.add_cog(
             TimerCommands(
@@ -30,7 +30,8 @@ class TimerManagerBot(commands.Bot):
             )
         )
 
-        await self.tree.sync()
+        synced = await self.tree.sync()
+        print(f"Synced {len(synced)} Timer Manager commands globally.")
 
     async def on_ready(self) -> None:
         """Log when the bot successfully connects to Discord."""

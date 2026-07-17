@@ -7,6 +7,9 @@ from discord.ext import commands
 from .timers import TimerManager
 from .utils import format_countdown, format_duration, parse_duration
 
+# Replace with your #timer-tool channel ID
+TIMER_CHANNEL_ID = 1527762004171952139  
+
 
 class TimerCommands(
     commands.GroupCog,
@@ -42,6 +45,13 @@ class TimerCommands(
     ) -> None:
         """Create a timer from a Discord slash command."""
 
+        if interaction.channel_id != TIMER_CHANNEL_ID:
+            await interaction.response.send_message(
+                f"❌ Timer commands can only be used in <#{TIMER_CHANNEL_ID}>.",
+                ephemeral=True,
+            )
+            return
+
         try:
             duration_seconds = parse_duration(duration)
         except ValueError as error:
@@ -52,13 +62,6 @@ class TimerCommands(
                 "`5m`\n"
                 "`1h 30m`\n"
                 "`2d`",
-                ephemeral=True,
-            )
-            return
-
-        if interaction.channel_id is None:
-            await interaction.response.send_message(
-                "❌ Timers must be created inside a server channel.",
                 ephemeral=True,
             )
             return
