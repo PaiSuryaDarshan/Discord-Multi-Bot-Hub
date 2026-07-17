@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from .timers import TimerManager
+from .views import TimerView
 from .utils import format_countdown, format_duration, parse_duration
 
 # Replace with your #timer-tool channel ID
@@ -125,7 +126,15 @@ class TimerCommands(
 
         embed.set_footer(text=f"Timer ID: {timer.timer_id}")
 
-        await interaction.response.send_message(embed=embed)
+        view = TimerView(
+            timer_id=timer.timer_id,
+            timer_manager=self.timer_manager,
+        )
+
+        await interaction.response.send_message(
+            embed=embed,
+            view=view,
+        )
 
         message = await interaction.original_response()
 
