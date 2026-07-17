@@ -20,7 +20,8 @@ Unlike simple `/timer 5m` commands, Timer Manager provides persistent, interacti
 - Required timer labels
 - Optional notifications for multiple Discord members and roles
 - Interactive button controls
-- Completion notifications
+- Private completion notifications for creators, members, and role members
+- Automatic removal of completed timer messages after one minute
 - Support for multiple concurrent timers
 
 ---
@@ -66,7 +67,7 @@ Notify: @Alice @Bob @StudyGroup
 Each timer stores:
 
 - creator
-- optional notification user
+- notification members and roles (the creator is always included)
 - channel
 - message
 - current status

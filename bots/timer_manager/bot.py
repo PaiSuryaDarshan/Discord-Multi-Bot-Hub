@@ -1,10 +1,16 @@
 """Discord client setup for Timer Manager."""
 
+import asyncio
+
 import discord
 from discord.ext import commands, tasks
 
 from .commands import TimerCommands
+from .models import Timer
 from .timers import InvalidTimerStateError, TimerManager
+
+
+COMPLETED_TIMER_LIFETIME_SECONDS = 60
 
 
 class TimerManagerBot(commands.Bot):
@@ -12,6 +18,7 @@ class TimerManagerBot(commands.Bot):
 
     def __init__(self) -> None:
         intents = discord.Intents.default()
+        intents.members = True
 
         super().__init__(
             command_prefix="!",
@@ -19,6 +26,7 @@ class TimerManagerBot(commands.Bot):
         )
 
         self.timer_manager = TimerManager()
+        self._cleanup_tasks: set[asyncio.Task[None]] = set()
 
     async def setup_hook(self) -> None:
         """Register commands, sync them, and start the timer checker."""
@@ -46,6 +54,17 @@ class TimerManagerBot(commands.Bot):
 
         if self.check_finished_timers.is_running():
             self.check_finished_timers.cancel()
+
+        cleanup_tasks = tuple(self._cleanup_tasks)
+
+        for cleanup_task in cleanup_tasks:
+            cleanup_task.cancel()
+
+        if cleanup_tasks:
+            await asyncio.gather(
+                *cleanup_tasks,
+                return_exceptions=True,
+            )
 
         await super().close()
 
@@ -75,27 +94,8 @@ class TimerManagerBot(commands.Bot):
                 continue
 
             await self._update_completed_message(channel, timer.message_id)
-
-            notify_mentions = [
-                *(f"<@{user_id}>" for user_id in timer.notify_user_ids),
-                *(f"<@&{role_id}>" for role_id in timer.notify_role_ids),
-            ]
-
-            try:
-                await channel.send(
-                    f"⏰ {' '.join(notify_mentions)} — "
-                    f"**{timer.label}** has finished!",
-                    allowed_mentions=discord.AllowedMentions(
-                        everyone=False,
-                        users=True,
-                        roles=True,
-                    ),
-                )
-            except discord.HTTPException as error:
-                print(
-                    f"Failed to send completion message for "
-                    f"timer {timer.timer_id}: {error}"
-                )
+            self._schedule_timer_cleanup(channel, timer)
+            await self._send_private_notifications(channel.guild, timer)
 
     @check_finished_timers.before_loop
     async def before_check_finished_timers(self) -> None:
@@ -139,6 +139,91 @@ class TimerManagerBot(commands.Bot):
             await message.edit(embed=embed)
         except discord.HTTPException:
             pass
+
+    async def _send_private_notifications(
+        self,
+        guild: discord.Guild,
+        timer: Timer,
+    ) -> None:
+        """DM the creator and every selected member or role member."""
+
+        member_ids = {timer.creator_id, *timer.notify_user_ids}
+        selected_role_ids = set(timer.notify_role_ids)
+
+        if selected_role_ids:
+            for role_id in selected_role_ids:
+                role = guild.get_role(role_id)
+
+                if role is not None:
+                    member_ids.update(member.id for member in role.members)
+
+            try:
+                async for member in guild.fetch_members(limit=None):
+                    if any(
+                        role.id in selected_role_ids
+                        for role in member.roles
+                    ):
+                        member_ids.add(member.id)
+            except (discord.Forbidden, discord.HTTPException) as error:
+                print(
+                    "Could not retrieve every role member for timer "
+                    f"{timer.timer_id}: {error}"
+                )
+
+        for member_id in member_ids:
+            member = guild.get_member(member_id)
+
+            if member is None:
+                try:
+                    member = await guild.fetch_member(member_id)
+                except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                    continue
+
+            if member.bot:
+                continue
+
+            try:
+                await member.send(
+                    f"⏰ **{timer.label}** has finished!\n"
+                    f"This is a private notification from **{guild.name}**."
+                )
+            except (discord.Forbidden, discord.HTTPException) as error:
+                print(
+                    f"Could not privately notify member {member_id} "
+                    f"for timer {timer.timer_id}: {error}"
+                )
+
+    def _schedule_timer_cleanup(
+        self,
+        channel: discord.TextChannel,
+        timer: Timer,
+    ) -> None:
+        """Schedule deletion of a completed timer's original message."""
+
+        cleanup_task = asyncio.create_task(
+            self._delete_timer_message_after_delay(channel, timer),
+            name=f"timer-cleanup-{timer.timer_id}",
+        )
+        self._cleanup_tasks.add(cleanup_task)
+        cleanup_task.add_done_callback(self._cleanup_tasks.discard)
+
+    async def _delete_timer_message_after_delay(
+        self,
+        channel: discord.TextChannel,
+        timer: Timer,
+    ) -> None:
+        """Delete the timer message after the completed grace period."""
+
+        await asyncio.sleep(COMPLETED_TIMER_LIFETIME_SECONDS)
+
+        if timer.message_id is not None:
+            try:
+                message = await channel.fetch_message(timer.message_id)
+                await message.delete()
+            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                pass
+
+        self.timer_manager.remove_timer(timer.timer_id)
 
 
 def create_bot() -> TimerManagerBot:
