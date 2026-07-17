@@ -76,10 +76,20 @@ class TimerManagerBot(commands.Bot):
 
             await self._update_completed_message(channel, timer.message_id)
 
+            notify_mentions = [
+                *(f"<@{user_id}>" for user_id in timer.notify_user_ids),
+                *(f"<@&{role_id}>" for role_id in timer.notify_role_ids),
+            ]
+
             try:
                 await channel.send(
-                    f"⏰ <@{timer.notify_user_id}> — "
-                    f"**{timer.label}** has finished!"
+                    f"⏰ {' '.join(notify_mentions)} — "
+                    f"**{timer.label}** has finished!",
+                    allowed_mentions=discord.AllowedMentions(
+                        everyone=False,
+                        users=True,
+                        roles=True,
+                    ),
                 )
             except discord.HTTPException as error:
                 print(

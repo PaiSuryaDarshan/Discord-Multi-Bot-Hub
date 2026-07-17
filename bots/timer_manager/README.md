@@ -18,7 +18,7 @@ Unlike simple `/timer 5m` commands, Timer Manager provides persistent, interacti
 - Add or remove time after creation
 - Cancel timers
 - Optional timer labels
-- Optional notification of another Discord member
+- Optional notifications for multiple Discord members and roles
 - Interactive button controls
 - Completion notifications
 - Support for multiple concurrent timers
@@ -28,7 +28,7 @@ Unlike simple `/timer 5m` commands, Timer Manager provides persistent, interacti
 ## Example
 
 ```text
-/timer start duration:25m label:"Pomodoro" notify:@Alice
+/timer start duration:25m label:"Pomodoro" notify:@Alice @Bob @StudyGroup
 ```
 
 Creates:
@@ -40,7 +40,7 @@ Status: Running
 Remaining: 24m 59s
 
 Started by: @Surya
-Notify: @Alice
+Notify: @Alice @Bob @StudyGroup
 
 [⏸ Pause] [➕ Add Time] [🛑 Cancel]
 ```

@@ -20,7 +20,8 @@ class Timer:
 
     timer_id: str
     creator_id: int
-    notify_user_id: int
+    notify_user_ids: tuple[int, ...]
+    notify_role_ids: tuple[int, ...]
     channel_id: int
     label: str
     duration_seconds: int
