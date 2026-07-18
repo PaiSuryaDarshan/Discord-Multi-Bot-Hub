@@ -7,7 +7,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from .timers import TimerManager
-from .views import TimerView
+from .views import PomodoroView, TimerView, build_pomodoro_embed
 from .utils import format_countdown, format_duration, parse_duration
 
 # Replace with your #timer-tool channel ID
@@ -76,6 +76,62 @@ class TimerCommands(
     ) -> None:
         self.bot = bot
         self.timer_manager = timer_manager
+
+    @app_commands.command(
+        name="pomodoro",
+        description="Start an automatic focus and break cycle.",
+    )
+    @app_commands.describe(
+        focus="Focus duration (default: 25m).",
+        short_break="Short-break duration (default: 5m).",
+        sessions="Number of focus sessions (default: 4).",
+        long_break="Final long-break duration (default: 15m).",
+        notify="User to notify when each phase ends (default: you).",
+    )
+    @app_commands.guild_only()
+    async def pomodoro(
+        self,
+        interaction: discord.Interaction,
+        focus: str = "25m",
+        short_break: str = "5m",
+        sessions: app_commands.Range[int, 1, 20] = 4,
+        long_break: str = "15m",
+        notify: discord.Member | None = None,
+    ) -> None:
+        """Start an automatically advancing Pomodoro cycle."""
+
+        if interaction.channel_id != TIMER_CHANNEL_ID:
+            await interaction.response.send_message(
+                f"❌ Timer commands can only be used in <#{TIMER_CHANNEL_ID}>.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            focus_seconds = parse_duration(focus)
+            short_break_seconds = parse_duration(short_break)
+            long_break_seconds = parse_duration(long_break)
+        except ValueError as error:
+            await interaction.response.send_message(f"❌ {error}", ephemeral=True)
+            return
+
+        notify_user = notify or interaction.user
+        timer = self.timer_manager.create_pomodoro(
+            creator_id=interaction.user.id,
+            notify_user_id=notify_user.id,
+            channel_id=interaction.channel_id,
+            focus_seconds=focus_seconds,
+            short_break_seconds=short_break_seconds,
+            long_break_seconds=long_break_seconds,
+            sessions=sessions,
+        )
+        view = PomodoroView(timer.timer_id, self.timer_manager)
+        await interaction.response.send_message(
+            embed=build_pomodoro_embed(timer),
+            view=view,
+        )
+        message = await interaction.original_response()
+        self.timer_manager.set_message_id(timer.timer_id, message.id)
 
     @app_commands.command(
         name="start",

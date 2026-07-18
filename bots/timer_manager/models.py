@@ -14,6 +14,26 @@ class TimerStatus(StrEnum):
     CANCELLED = "cancelled"
 
 
+class PomodoroPhase(StrEnum):
+    """Phases in a Pomodoro cycle."""
+
+    FOCUS = "focus"
+    SHORT_BREAK = "short_break"
+    LONG_BREAK = "long_break"
+
+
+@dataclass
+class PomodoroState:
+    """Configuration and progress for a Pomodoro timer."""
+
+    focus_seconds: int
+    short_break_seconds: int
+    long_break_seconds: int
+    total_sessions: int
+    phase: PomodoroPhase = PomodoroPhase.FOCUS
+    completed_sessions: int = 0
+
+
 @dataclass
 class Timer:
     """Represent a Discord timer."""
@@ -30,6 +50,7 @@ class Timer:
     message_id: int | None = None
     end_time: datetime | None = None
     remaining_seconds: int | None = None
+    pomodoro: PomodoroState | None = None
 
     def __post_init__(self) -> None:
         if self.duration_seconds <= 0:

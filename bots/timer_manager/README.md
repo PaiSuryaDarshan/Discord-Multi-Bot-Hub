@@ -23,6 +23,8 @@ Unlike simple `/timer 5m` commands, Timer Manager provides persistent, interacti
 - Private completion notifications for creators, members, and role members
 - Automatic removal of completed timer messages after one minute
 - Support for multiple concurrent timers
+- Automatic Pomodoro cycles with configurable focus, break, and session lengths
+- Per-phase Pomodoro notifications and a dedicated Cancel button
 
 ---
 
@@ -30,6 +32,8 @@ Unlike simple `/timer 5m` commands, Timer Manager provides persistent, interacti
 
 ```text
 /timer start duration:25m label:"Pomodoro" notify:@Alice @Bob @StudyGroup
+/timer pomodoro
+/timer pomodoro focus:30m short_break:10m sessions:3 long_break:20m notify:@Alice
 ```
 
 Creates:
@@ -95,7 +99,6 @@ Discord's native relative timestamps are used where appropriate to minimise API 
 ## Future Ideas
 
 - Recurring timers
-- Pomodoro mode
 - Shared team timers
 - Multiple notification reminders
 - Timer history

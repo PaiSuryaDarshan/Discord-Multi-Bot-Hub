@@ -2,7 +2,7 @@
 
 import discord
 
-from .models import Timer, TimerStatus
+from .models import PomodoroPhase, Timer, TimerStatus
 from .timers import (
     InvalidTimerStateError,
     TimerManager,
@@ -10,6 +10,117 @@ from .timers import (
     TimerPermissionError,
 )
 from .utils import format_duration, parse_duration
+
+
+POMODORO_PHASE_NAMES = {
+    PomodoroPhase.FOCUS: "🎯 Focus",
+    PomodoroPhase.SHORT_BREAK: "☕ Short break",
+    PomodoroPhase.LONG_BREAK: "🌿 Long break",
+}
+
+
+def build_pomodoro_embed(timer: Timer) -> discord.Embed:
+    """Build the current Pomodoro phase and progress display."""
+
+    state = timer.pomodoro
+    if state is None:
+        raise ValueError("Timer does not contain Pomodoro state.")
+
+    if timer.status == TimerStatus.CANCELLED:
+        description = "Pomodoro cancelled."
+        colour = discord.Colour.red()
+        countdown = "—"
+    elif timer.status == TimerStatus.COMPLETED:
+        description = "Pomodoro completed. Great work!"
+        colour = discord.Colour.green()
+        countdown = "Complete"
+    else:
+        description = "Pomodoro is running automatically."
+        colour = discord.Colour.blurple()
+        timestamp = int(timer.end_time.timestamp()) if timer.end_time else 0
+        countdown = f"<t:{timestamp}:R>" if timestamp else "—"
+
+    embed = discord.Embed(
+        title="🍅 Pomodoro",
+        description=description,
+        colour=colour,
+    )
+    if state.phase == PomodoroPhase.FOCUS and timer.status == TimerStatus.RUNNING:
+        progress = (
+            f"Focus session {state.completed_sessions + 1}/"
+            f"{state.total_sessions}"
+        )
+    else:
+        progress = (
+            f"{state.completed_sessions}/{state.total_sessions} "
+            "focus sessions complete"
+        )
+
+    embed.add_field(
+        name="Current phase",
+        value=POMODORO_PHASE_NAMES[state.phase],
+        inline=True,
+    )
+    embed.add_field(
+        name="Session progress",
+        value=progress,
+        inline=True,
+    )
+    embed.add_field(name="Countdown", value=countdown, inline=False)
+    embed.add_field(
+        name="Cycle",
+        value=(
+            f"Focus: {format_duration(state.focus_seconds)} • "
+            f"Short break: {format_duration(state.short_break_seconds)} • "
+            f"Long break: {format_duration(state.long_break_seconds)}"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Notify",
+        value=f"<@{timer.notify_user_ids[0]}>",
+        inline=True,
+    )
+    embed.set_footer(text=f"Timer ID: {timer.timer_id}")
+    return embed
+
+
+class PomodoroView(discord.ui.View):
+    """Single cancel control for a Pomodoro."""
+
+    def __init__(self, timer_id: str, timer_manager: TimerManager) -> None:
+        super().__init__(timeout=None)
+        self.timer_id = timer_id
+        self.timer_manager = timer_manager
+
+    @discord.ui.button(
+        label="Cancel",
+        emoji="🛑",
+        style=discord.ButtonStyle.danger,
+    )
+    async def cancel(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        try:
+            timer = self.timer_manager.cancel_timer(
+                self.timer_id,
+                interaction.user.id,
+            )
+        except (
+            TimerNotFoundError,
+            TimerPermissionError,
+            InvalidTimerStateError,
+        ) as error:
+            await interaction.response.send_message(f"❌ {error}", ephemeral=True)
+            return
+
+        button.disabled = True
+        await interaction.response.edit_message(
+            embed=build_pomodoro_embed(timer),
+            view=self,
+        )
 
 
 class AddTimeModal(discord.ui.Modal, title="Add Time"):

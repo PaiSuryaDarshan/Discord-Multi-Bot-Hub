@@ -6,8 +6,9 @@ import discord
 from discord.ext import commands, tasks
 
 from .commands import TimerCommands
-from .models import Timer
+from .models import PomodoroPhase, Timer, TimerStatus
 from .timers import InvalidTimerStateError, TimerManager
+from .views import POMODORO_PHASE_NAMES, PomodoroView, build_pomodoro_embed
 
 
 COMPLETED_TIMER_LIFETIME_SECONDS = 60
@@ -73,6 +74,10 @@ class TimerManagerBot(commands.Bot):
         """Check active timers and announce completed ones."""
 
         for timer in self.timer_manager.get_due_timers():
+            if timer.pomodoro is not None:
+                await self._finish_pomodoro_phase(timer)
+                continue
+
             try:
                 self.timer_manager.complete_timer(timer.timer_id)
             except InvalidTimerStateError:
@@ -96,6 +101,80 @@ class TimerManagerBot(commands.Bot):
             await self._update_completed_message(channel, timer.message_id)
             self._schedule_timer_cleanup(channel, timer)
             await self._send_private_notifications(channel.guild, timer)
+
+    async def _finish_pomodoro_phase(self, timer: Timer) -> None:
+        """Notify for one phase, advance it, and refresh its message."""
+
+        state = timer.pomodoro
+        if state is None:
+            return
+        finished_phase = state.phase
+
+        try:
+            self.timer_manager.advance_pomodoro(timer.timer_id)
+        except InvalidTimerStateError:
+            return
+
+        channel = self.get_channel(timer.channel_id)
+        if channel is None:
+            try:
+                channel = await self.fetch_channel(timer.channel_id)
+            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                return
+        if not isinstance(channel, discord.TextChannel):
+            return
+
+        await self._send_pomodoro_notification(
+            channel.guild,
+            timer,
+            finished_phase,
+        )
+        await self._update_pomodoro_message(channel, timer)
+        if timer.status == TimerStatus.COMPLETED:
+            self._schedule_timer_cleanup(channel, timer)
+
+    async def _update_pomodoro_message(
+        self,
+        channel: discord.TextChannel,
+        timer: Timer,
+    ) -> None:
+        if timer.message_id is None:
+            return
+        try:
+            message = await channel.fetch_message(timer.message_id)
+            view = PomodoroView(timer.timer_id, self.timer_manager)
+            if timer.status == TimerStatus.COMPLETED:
+                for item in view.children:
+                    if isinstance(item, discord.ui.Button):
+                        item.disabled = True
+            await message.edit(embed=build_pomodoro_embed(timer), view=view)
+        except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+            pass
+
+    async def _send_pomodoro_notification(
+        self,
+        guild: discord.Guild,
+        timer: Timer,
+        phase: PomodoroPhase,
+    ) -> None:
+        """DM the selected Pomodoro user when a phase ends."""
+
+        member_id = timer.notify_user_ids[0]
+        member = guild.get_member(member_id)
+        if member is None:
+            try:
+                member = await guild.fetch_member(member_id)
+            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                return
+        if member.bot:
+            return
+        try:
+            await member.send(
+                f"🍅 **{POMODORO_PHASE_NAMES[phase]}** has ended "
+                f"in **{guild.name}**."
+            )
+        except (discord.Forbidden, discord.HTTPException):
+            pass
 
     @check_finished_timers.before_loop
     async def before_check_finished_timers(self) -> None:

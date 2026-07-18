@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
-from .models import Timer, TimerStatus
+from .models import PomodoroPhase, PomodoroState, Timer, TimerStatus
 
 
 class TimerNotFoundError(KeyError):
@@ -55,6 +55,70 @@ class TimerManager:
         )
 
         self._timers[timer_id] = timer
+        return timer
+
+    def create_pomodoro(
+        self,
+        *,
+        creator_id: int,
+        notify_user_id: int,
+        channel_id: int,
+        focus_seconds: int = 1_500,
+        short_break_seconds: int = 300,
+        long_break_seconds: int = 900,
+        sessions: int = 4,
+    ) -> Timer:
+        """Create a Pomodoro beginning with its first focus phase."""
+
+        if min(focus_seconds, short_break_seconds, long_break_seconds) <= 0:
+            raise ValueError("Pomodoro durations must be greater than zero.")
+        if sessions <= 0:
+            raise ValueError("Pomodoro sessions must be greater than zero.")
+
+        timer = self.create_timer(
+            creator_id=creator_id,
+            notify_user_ids=(notify_user_id,),
+            notify_role_ids=(),
+            channel_id=channel_id,
+            duration_seconds=focus_seconds,
+            label="Pomodoro",
+        )
+        timer.pomodoro = PomodoroState(
+            focus_seconds=focus_seconds,
+            short_break_seconds=short_break_seconds,
+            long_break_seconds=long_break_seconds,
+            total_sessions=sessions,
+        )
+        return timer
+
+    def advance_pomodoro(self, timer_id: str) -> Timer:
+        """Finish the current phase and start the next one, if any."""
+
+        timer = self.get_timer(timer_id)
+        state = timer.pomodoro
+
+        if state is None:
+            raise InvalidTimerStateError("This is not a Pomodoro timer.")
+        if timer.status != TimerStatus.RUNNING:
+            raise InvalidTimerStateError("Only running Pomodoros can advance.")
+
+        if state.phase == PomodoroPhase.FOCUS:
+            state.completed_sessions += 1
+            if state.completed_sessions >= state.total_sessions:
+                state.phase = PomodoroPhase.LONG_BREAK
+                duration = state.long_break_seconds
+            else:
+                state.phase = PomodoroPhase.SHORT_BREAK
+                duration = state.short_break_seconds
+        elif state.phase == PomodoroPhase.SHORT_BREAK:
+            state.phase = PomodoroPhase.FOCUS
+            duration = state.focus_seconds
+        else:
+            return self.complete_timer(timer_id)
+
+        timer.duration_seconds = duration
+        timer.remaining_seconds = duration
+        timer.end_time = datetime.now(timezone.utc) + timedelta(seconds=duration)
         return timer
 
     def get_timer(self, timer_id: str) -> Timer:
