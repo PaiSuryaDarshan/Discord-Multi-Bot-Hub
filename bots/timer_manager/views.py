@@ -1,5 +1,7 @@
 """Interactive controls for Discord timers."""
 
+from collections.abc import Callable
+
 import discord
 
 from .models import PomodoroPhase, Timer, TimerStatus
@@ -85,13 +87,22 @@ def build_pomodoro_embed(timer: Timer) -> discord.Embed:
     return embed
 
 
+CleanupCallback = Callable[[discord.TextChannel, Timer], None]
+
+
 class PomodoroView(discord.ui.View):
     """Single cancel control for a Pomodoro."""
 
-    def __init__(self, timer_id: str, timer_manager: TimerManager) -> None:
+    def __init__(
+        self,
+        timer_id: str,
+        timer_manager: TimerManager,
+        schedule_cancelled_cleanup: CleanupCallback,
+    ) -> None:
         super().__init__(timeout=None)
         self.timer_id = timer_id
         self.timer_manager = timer_manager
+        self.schedule_cancelled_cleanup = schedule_cancelled_cleanup
 
     @discord.ui.button(
         label="Cancel",
@@ -121,6 +132,8 @@ class PomodoroView(discord.ui.View):
             embed=build_pomodoro_embed(timer),
             view=self,
         )
+        if isinstance(interaction.channel, discord.TextChannel):
+            self.schedule_cancelled_cleanup(interaction.channel, timer)
 
 
 class AddTimeModal(discord.ui.Modal, title="Add Time"):
@@ -183,11 +196,13 @@ class TimerView(discord.ui.View):
         self,
         timer_id: str,
         timer_manager: TimerManager,
+        schedule_cancelled_cleanup: CleanupCallback,
     ) -> None:
         super().__init__(timeout=None)
 
         self.timer_id = timer_id
         self.timer_manager = timer_manager
+        self.schedule_cancelled_cleanup = schedule_cancelled_cleanup
 
     async def interaction_check(
         self,
@@ -315,6 +330,8 @@ class TimerView(discord.ui.View):
         self.disable_all_items()
 
         await update_timer_message(interaction, timer, view=self)
+        if isinstance(interaction.channel, discord.TextChannel):
+            self.schedule_cancelled_cleanup(interaction.channel, timer)
 
     def disable_all_items(self) -> None:
         """Disable every button in the view."""

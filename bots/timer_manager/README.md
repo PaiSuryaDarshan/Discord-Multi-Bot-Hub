@@ -22,6 +22,7 @@ Unlike simple `/timer 5m` commands, Timer Manager provides persistent, interacti
 - Interactive button controls
 - Private completion notifications for creators, members, and role members
 - Automatic removal of completed timer messages after one minute
+- Automatic removal of cancelled timer messages after 30 seconds
 - Support for multiple concurrent timers
 - Automatic Pomodoro cycles with configurable focus, break, and session lengths
 - Per-phase Pomodoro notifications and a dedicated Cancel button

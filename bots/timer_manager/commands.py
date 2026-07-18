@@ -1,5 +1,6 @@
 """Slash commands for Timer Manager."""
 
+from collections.abc import Callable
 import re
 
 import discord
@@ -7,6 +8,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from .timers import TimerManager
+from .models import Timer
 from .views import PomodoroView, TimerView, build_pomodoro_embed
 from .utils import format_countdown, format_duration, parse_duration
 
@@ -73,9 +75,14 @@ class TimerCommands(
         self,
         bot: commands.Bot,
         timer_manager: TimerManager,
+        schedule_cancelled_cleanup: Callable[
+            [discord.TextChannel, Timer],
+            None,
+        ],
     ) -> None:
         self.bot = bot
         self.timer_manager = timer_manager
+        self.schedule_cancelled_cleanup = schedule_cancelled_cleanup
 
     @app_commands.command(
         name="pomodoro",
@@ -125,7 +132,11 @@ class TimerCommands(
             long_break_seconds=long_break_seconds,
             sessions=sessions,
         )
-        view = PomodoroView(timer.timer_id, self.timer_manager)
+        view = PomodoroView(
+            timer.timer_id,
+            self.timer_manager,
+            self.schedule_cancelled_cleanup,
+        )
         await interaction.response.send_message(
             embed=build_pomodoro_embed(timer),
             view=view,
@@ -278,6 +289,7 @@ class TimerCommands(
         view = TimerView(
             timer_id=timer.timer_id,
             timer_manager=self.timer_manager,
+            schedule_cancelled_cleanup=self.schedule_cancelled_cleanup,
         )
 
         await interaction.response.send_message(

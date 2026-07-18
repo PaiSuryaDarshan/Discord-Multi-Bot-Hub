@@ -12,6 +12,7 @@ from .views import POMODORO_PHASE_NAMES, PomodoroView, build_pomodoro_embed
 
 
 COMPLETED_TIMER_LIFETIME_SECONDS = 60
+CANCELLED_TIMER_LIFETIME_SECONDS = 30
 
 
 class TimerManagerBot(commands.Bot):
@@ -36,6 +37,7 @@ class TimerManagerBot(commands.Bot):
             TimerCommands(
                 bot=self,
                 timer_manager=self.timer_manager,
+                schedule_cancelled_cleanup=self.schedule_cancelled_cleanup,
             )
         )
 
@@ -142,7 +144,11 @@ class TimerManagerBot(commands.Bot):
             return
         try:
             message = await channel.fetch_message(timer.message_id)
-            view = PomodoroView(timer.timer_id, self.timer_manager)
+            view = PomodoroView(
+                timer.timer_id,
+                self.timer_manager,
+                self.schedule_cancelled_cleanup,
+            )
             if timer.status == TimerStatus.COMPLETED:
                 for item in view.children:
                     if isinstance(item, discord.ui.Button):
@@ -276,24 +282,43 @@ class TimerManagerBot(commands.Bot):
         self,
         channel: discord.TextChannel,
         timer: Timer,
+        delay_seconds: int = COMPLETED_TIMER_LIFETIME_SECONDS,
     ) -> None:
-        """Schedule deletion of a completed timer's original message."""
+        """Schedule deletion of a finished timer's original message."""
 
         cleanup_task = asyncio.create_task(
-            self._delete_timer_message_after_delay(channel, timer),
+            self._delete_timer_message_after_delay(
+                channel,
+                timer,
+                delay_seconds,
+            ),
             name=f"timer-cleanup-{timer.timer_id}",
         )
         self._cleanup_tasks.add(cleanup_task)
         cleanup_task.add_done_callback(self._cleanup_tasks.discard)
 
-    async def _delete_timer_message_after_delay(
+    def schedule_cancelled_cleanup(
         self,
         channel: discord.TextChannel,
         timer: Timer,
     ) -> None:
-        """Delete the timer message after the completed grace period."""
+        """Delete a cancelled timer message after its shorter grace period."""
 
-        await asyncio.sleep(COMPLETED_TIMER_LIFETIME_SECONDS)
+        self._schedule_timer_cleanup(
+            channel,
+            timer,
+            CANCELLED_TIMER_LIFETIME_SECONDS,
+        )
+
+    async def _delete_timer_message_after_delay(
+        self,
+        channel: discord.TextChannel,
+        timer: Timer,
+        delay_seconds: int,
+    ) -> None:
+        """Delete the timer message after its grace period."""
+
+        await asyncio.sleep(delay_seconds)
 
         if timer.message_id is not None:
             try:
