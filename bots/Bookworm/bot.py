@@ -8,8 +8,8 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from embeds import build_book_embed
-from hardcover import HardcoverAPIError, get_book, search_books
+from .embeds import build_book_embed
+from .hardcover import HardcoverAPIError, get_book, search_books
 
 
 load_dotenv()
