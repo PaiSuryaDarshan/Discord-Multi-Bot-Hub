@@ -243,7 +243,10 @@ async def recommend_book(
         )
         return
 
-    embed = build_book_embed(book_data)
+    embed = build_book_embed(
+        book_data,
+        suggested_by=interaction.user.mention,
+    )
 
     await interaction.followup.send(
         embed=embed,

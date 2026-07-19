@@ -75,6 +75,7 @@ def _format_tags(tags: Any) -> str:
 
 def build_book_embed(
     book: dict[str, Any],
+    suggested_by: str | None = None,
 ) -> discord.Embed:
     """Build a Discord embed from a normalised Hardcover book record."""
 
@@ -206,6 +207,13 @@ def build_book_embed(
         embed.add_field(
             name="🔗 Hardcover",
             value=f"[View book on Hardcover]({hardcover_url})",
+            inline=False,
+        )
+
+    if suggested_by:
+        embed.add_field(
+            name="Suggested by",
+            value=suggested_by,
             inline=False,
         )
 
