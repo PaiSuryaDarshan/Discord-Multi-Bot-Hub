@@ -78,6 +78,12 @@ class BookBot(commands.Bot):
 bot = BookBot()
 
 
+def create_bot() -> BookBot:
+    """Return the configured, unstarted Bookworm Discord bot."""
+
+    return bot
+
+
 def _autocomplete_name(book: dict[str, Any]) -> str:
     """Build a readable autocomplete label."""
 
